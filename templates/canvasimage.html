@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Canvas Board</title>
+    <style>
+        
+
+        canvas {
+            background-color: white;
+            border: 1px solid black;
+            margin: auto;
+            bottom:0;right:0;
+        }
+
+        .canvas-board{
+            position: absolute;
+            top:-10%;
+            left:-32px;
+        }
+  
+        .savebutton {
+            position: absolute;
+            width:110px;
+            height:30px;
+            left:130px;
+            top:420px;
+		}
+        button {
+            position: absolute;
+            width:110px;
+            height:30px;
+            left:541px;
+            top:490px;
+		}
+
+        .button2 {
+			top: 420px;
+            left: 880px;
+            position: absolute;
+            width:110px;
+            height:30px;
+            border: 1px solid black;
+		}
+
+        .button5{
+            position: absolute;
+            left:250px;
+            top:420px;
+            height: 30px;
+            background-color: yellowgreen;
+        }
+        
+        .headers{
+            
+			text-align: center;
+			position: absolute;
+			top: -2%;
+			left: 40%;
+			/* transform: translate(-50%, -50%); */
+        }
+
+
+        .predicted-text{
+            position: absolute;
+            left:590px;
+            top: 490px;
+            height: 25px;
+            width: 200px;
+        }
+
+        .get-predicted-equation{
+            position: absolute;
+            left:450px;
+            top:490px;
+            background-color: aquamarine;
+            font-size: 21px;
+            text-align: center;
+            border-width: 3px;
+            border-color: black;
+            cursor: pointer;
+            border: 1px solid aquamarine;
+            height: 26px;
+            border-radius: 5px;
+        }
+
+        .solved-text{
+            position: absolute;
+            left: 590px;
+            top: 535px;
+            height: 25px;
+            width: 200px;
+        }
+
+        .get-solved-equation{
+            position: absolute;
+            left:450px;
+            top:535px;
+            height: 26px;
+            width: 62px;
+            background-color: #cbaacb;
+            border: 1px solid #cbaacb;
+            font-size: 21px;
+            border-radius: 5px;
+        }
+
+        #loader {
+          display: none;
+          position: fixed;
+          top: 50px;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 9999;
+        }
+
+        #loader:after {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          margin: -25px 0 0 -25px;
+          border: 5px solid #f3f3f3;
+          border-radius: 50%;
+          border-top: 5px solid #3498db;
+          width: 50px;
+          height: 50px;
+          -webkit-animation: spin 1s linear infinite;
+          animation: spin 1s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+          0% { -webkit-transform: rotate(0deg); }
+          100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        .get-exponent-equation{
+            position: absolute;
+            left: 640px;
+            top: 440px;
+            height: 32px;
+            background-color: wheat;
+            border: 1px solid wheat;
+            font-size: 21px;
+            border-radius: 5px;
+
+        }
+
+        .go-to-home{
+            position: absolute;
+            top: 420px;
+            left: 1000px;
+            background-color:whitesmoke;
+            border: 1px solid black;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="headers">
+        <h1 style="top :100px">Canvas Board</h1>
+        <p style="top:56px; position:absolute; left:10px;" >Write your equations here:</p>
+    </div>
+
+    <div>
+        <canvas class="canvas-board" id="canvas" width="1000" height="300"></canvas>
+    </div>
+    <br>
+
+        <button class="savebutton" id="save" style="background-color: rgb(68, 68, 113);" onclick="validate()" >Save Drawing</button>
+        <div>
+            <button class="button5" id="undo-bt" >Undo</button>
+        </div>
+    <div>
+        <button class="button2" id="clear-bt" style="background-color: whitesmoke;" >Clear</button>
+    </div>
+
+    
+    
+
+
+    <button class="get-exponent-equation" onclick="getExponent()">Exponent</button>
+
+    <input class="predicted-text" name="equation" type="text" id="output" >
+	<button class="get-predicted-equation" onclick="getText()">Predict</button>
+    <div id="loader"></div>
+
+    <input class="solved-text"  type="text" id="solve_equation" >
+	<button class="get-solved-equation" id="solve_equation_button" onclick="getsolved()">solve</button>
+
+    <form action="{{url_for('index')}}" method="POST">
+        <button class="go-to-home"> Home</button>
+</form>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d',  { willReadFrequently: true });
+
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let paths=[];
+
+        function draw(e) {
+            if (!isDrawing) return;
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+            lastX = e.offsetX;
+            lastY = e.offsetY;
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            lastX = e.offsetX;
+            lastY = e.offsetY;
+        });
+
+        canvas.addEventListener('mousemove', draw);
+
+        canvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+            paths.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+
+        });
+
+        canvas.addEventListener('mouseout', () => {
+            isDrawing = false;
+        });
+
+        document.getElementById('save').addEventListener('click', () => {
+            // Get the base64-encoded image data from the canvas
+            const canvas_data = canvas.toDataURL('image/png');
+
+            //bich me code
+            var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            var data = imageData.data;
+            var isBlank = true;
+            for (var i = 0; i < data.length; i++) {
+                if (data[i] !== 0) {
+                    isBlank = false;
+                    break;
+                }
+            }
+            if (isBlank) {
+                alert('Please draw something on the canvas.');
+                return false;
+            }
+            //upar codd
+            // Send the image data to the Flask endpoint to save it
+            fetch('/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'canvas_data=' + encodeURIComponent(canvas_data)
+            })
+                .then(response => response.text())
+                .then(data => alert(data))
+                .catch(error => console.error(error));
+        });
+
+        // function validate() {
+        //     var canvas = document.getElementById('canvas');
+        //     var ctx = canvas.getContext('2d');
+        //     var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        //     var data = imageData.data;
+        //     var isBlank = true;
+        //     for (var i = 0; i < data.length; i++) {
+        //         if (data[i] !== 0) {
+        //             isBlank = false;
+        //             break;
+        //         }
+        //     }
+        //     if (isBlank) {
+        //         alert('Please draw something on the canvas.');
+        //         return false;
+        //     }
+        //     return true;
+        // }
+
+        function clearCanvas() {
+            document.getElementById("output").value = "";
+            document.getElementById("solve_equation").value = "";
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            paths=[];
+            undoStack = [];
+        }
+
+        var clearBtn = document.getElementById('clear-bt');
+        document.getElementById("output").value = "";
+        document.getElementById("solve_equation").value = "";
+        clearBtn.addEventListener('click', clearCanvas);
+
+        function undo() {
+			if (paths.length <= 1) {
+				clearCanvas();
+			} else {
+                paths.pop();
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				for (let i = 0; i < paths.length; i++) {
+					ctx.putImageData(paths[i], 0, 0);
+				}
+			}
+		}
+
+		var undoBtn = document.getElementById('undo-bt');
+		undoBtn.addEventListener('click', undo);
+
+        const loader = document.querySelector('#loader');
+        function getText() {
+            loader.style.display = 'block';
+    $.ajax({
+        url: '/predict_upload_image',
+        type: 'GET',
+        success: function(data) {
+            if (data!='Please write or upload some image first'){
+                console.log("here")
+                loader.style.display = 'none';
+                $('#output').val(data);
+            }else{
+                alert('Please write or upload some image first');
+                loader.style.display = 'none';
+            }
+        },
+        error: function(xhr, textStatus, errorThrown) {
+            console.log('Error:', errorThrown);
+        }
+    });
+}
+
+function getExponent() {
+    $.ajax({
+        url: '/square',
+        type: 'GET',
+        success: function(data) {
+            console.log(data);
+            if (data == 'Please upload or write something') {
+                alert('Please upload or write something');
+    }else if (data=='Please write or upload properly equation.') {
+        alert('Please write or upload properly equation.');
+    }
+    else{
+            $('#solve_equation').val(data);
+    }
+        },
+        error: function(xhr, textStatus, errorThrown) {
+            console.log('Error:', errorThrown);
+        }
+    });
+}
+         
+        function getsolved() {
+    var inputText = $("#output").val(); // get input text from textbox
+    if (inputText === '') {
+                alert('Please predict some equation first');
+    }else{
+    $.ajax({
+        url: '/solve_equation_func',
+        type: 'POST',
+        data: {inputequation: inputText},
+        success: function(data) {
+            $("#solve_equation").val(data); // display returned text in output textbox
+        },
+        error: function(xhr, textStatus, errorThrown) {
+            console.log('Error:', errorThrown);
+        }
+    });
+}
+}
+
+function getcanvaimagesaved() {
+    console.log("1");
+    var inputText = $("#canvas_data").val(); // get input text from textbox
+    $.ajax({
+        url: '/save',
+        type: 'POST',
+        data: {canva_data: canva_data},
+        success: function(data) {
+            alert("Image saved"); // display returned text in output textbox
+        },
+        error: function(xhr, textStatus, errorThrown) {
+            console.log('Error:', errorThrown);
+        }
+    });
+}
+
+
+    </script>
+</body>
+</html>

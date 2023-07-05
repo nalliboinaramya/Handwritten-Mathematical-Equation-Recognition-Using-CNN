@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Canvas Board</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+            margin: auto;
+            position: absolute;
+            top:0;left:0;bottom:0;right:0;
+        }
+        .container {
+			position: absolute;
+			top: 50%;
+			left: 45%;
+			transform: translate(-50%, -50%);
+		}
+        .button {
+			margin-top: 430px;
+            width:110px;
+            height:30px;
+            left:44px;
+		}
+
+        .button2 {
+			top: 445px;
+            left: 120%;
+            position: absolute;
+            width:110px;
+            height:30px;
+		}
+
+        .button3 {
+			top: 445px;
+            left: 248%;
+            position: absolute;
+            width:110px;
+            height:30px;
+		}
+
+        .predict{
+            top: 500px;
+            left: -224%;
+            width:110px;
+            height:30px;
+            position: absolute;
+        }
+
+        .solve{
+            top: 500px;
+            left: 59%;
+            width:110px;
+            height:30px;
+            position: absolute;
+        }
+
+        .headers{
+            
+			text-align: center;
+			position: absolute;
+			top: 5%;
+			left: 40%;
+			/* transform: translate(-50%, -50%); */
+        }
+
+        .textpredict{
+            top: 500px;
+            left: 67px;
+            position: absolute;
+            width:156px;
+            height:25px;
+        }
+
+        .uploaded-image{
+            height: 300px;
+            width: 450px;
+            border: 1px solid black;
+        }
+
+        .textequation{
+            top: 500px;
+            left: -110%;
+            position: absolute;
+            width:140px;
+            height:25px;
+        }
+
+        .textsolve{
+            top: 500px;
+            left: 172%;
+            position: absolute;
+            width:140px;
+            height:25px;
+        }
+
+        .textsquare{
+            top: 444px;
+            left: 352%;
+            position: absolute;
+            width:140px;
+            height:25px;
+        }
+
+        .reset-button{
+            top: 500px;
+            left: 323%;
+            position: absolute;
+            width:144px;
+            height:30px;
+        }
+
+        .predicted-equation-text{
+            top: 484px;
+            left: -243%;
+            position: absolute;
+            width:133px;
+            height:30px;
+        }
+
+        .info-box {
+        position: fixed;
+        top: 20px;
+        right: 40px;
+        padding: 0px;
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        height: 111px;
+        width: 256px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Image Upload</h1>
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <input type="file" name="image">
+            <input type="submit" value="Upload">
+        </form>
+        <h2>Uploaded Image:</h2>
+        <div class="card">
+            {% if filename %}
+            <img class="uploaded-image" src="static\equation.png" >
+            {% else %}
+            <img class="uploaded-image" src="static\upload_image_logo.png" >
+            {% endif  %}
+        </div>
+    </div>
+    <div class="headers">
+        <h1>Canvas Board</h1>
+        <p>Write your equations here:</p>
+    </div>
+
+    <div class="info-box">
+        <p><b>*</b> = For multiplication( E.g. 2*2 = 4)</p><br>
+        <p> <b>:</b> = For raise to (E.g. x:2 = x square)</p><br>
+      </div>
+
+    <div class="container">
+        <div>
+            <canvas id="canvas" width="500" height="350"></canvas>
+        </div>
+        <br>
+        <div>
+            <button class="button" id="save" style="background-color: rgb(68, 68, 113);">Save Drawing</button>
+        </div>
+
+        <div>
+            <button class="button2" id="clear-bt" style="background-color: rgb(184, 74, 74);" >Clear</button>
+        </div>
+        
+        
+
+        <form name="square" action="{{ url_for('square') }}" method="POST">
+            <div>
+                <button class="button3" style="background-color: rgb(6, 241, 206);" >Square Values</button>
+            </div>
+            <div>
+                <input class="textsquare" type="text" name="square_text" value="{{ square_text_val }}" size="20">
+            </div>
+        </form>
+        
+        <form name="reset-form" action="{{ url_for('reset')}}" method="POST">
+            <div>
+                <button class="reset-button" id="reset-button">Reset</button>
+            </div>
+        </form>
+
+
+        <form name="form1" action="{{ url_for('predict') }}" method="POST">
+            <!-- <div>
+                <input class="textpredict" type="text" name="prediction" value="{{ prediction }}">
+            </div> -->
+
+            <div>
+                <button class="predict" type="submit" style="background-color: rgb(80, 186, 80);">Predict</button>
+            </div>
+
+            <div>
+                <input class="textequation" type="text" name="equation" value="{{ equation }}">
+            </div>
+
+            <div>
+                <button class="solve" type="submit" style="background-color: rgb(5, 239, 192);">Solve</button>
+            </div>
+
+            <div>
+                <input class="textsolve" type="text" name="solve" value="{{ solved_equation }}" size="20" readonly>
+            </div>
+
+            <!-- <div>
+                <button class="reset-button" id="reset-button">Reset</button>
+            </div> -->
+
+        </form>
+
+    </div>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        function draw(e) {
+            if (!isDrawing) return;
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+            lastX = e.offsetX;
+            lastY = e.offsetY;
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            lastX = e.offsetX;
+            lastY = e.offsetY;
+        });
+
+        canvas.addEventListener('mousemove', draw);
+
+        canvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+        });
+
+        canvas.addEventListener('mouseout', () => {
+            isDrawing = false;
+        });
+
+        document.getElementById('save').addEventListener('click', () => {
+            // Get the base64-encoded image data from the canvas
+            const canvas_data = canvas.toDataURL('image/png');
+            // Send the image data to the Flask endpoint to save it
+            fetch('/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'canvas_data=' + encodeURIComponent(canvas_data)
+            })
+                .then(response => response.text())
+                .then(data => alert(data))
+                .catch(error => console.error(error));
+        });
+
+        function clearCanvas() {
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        var clearBtn = document.getElementById('clear-bt');
+        clearBtn.addEventListener('click', clearCanvas);
+
+    </script>
+</body>
+</html>
