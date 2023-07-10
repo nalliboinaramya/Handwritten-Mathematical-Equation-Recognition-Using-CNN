@@ -1,10 +1,15 @@
 # Handwritten-Mathematical-Equation-Recognition-Using-CNN
-Handwritten Mathematical Equation Recognition With Deep Learning
+
+
+
 Handwritten Mathematical Equation Recognition and Solving Using Convolution Neural Networks
-develop a user friendly website that takes an image mathematical equation or equation written on canvas , recognize the equation and present the user with required solution.Since mathematics itself is a very wide field therefore, only a subset of these mathematical symbols is considered in this paper which are digits (0-9), arithmetic operators (+, -, *, ÷), characters(y).
+we developed a user friendly Flask application that takes an image mathematical equation or equation written on canvas , recognize the equation using Convolution Neural Network and present the user with required solution.Since mathematics itself is a very wide field therefore, only a subset of these mathematical symbols is considered in this paper which are digits (0-9), arithmetic operators (+, -, *, ÷), characters(y).
 
 **Downlod Dataset Here**
 https://www.kaggle.com/datasets/xainano/handwrittenmathsymbols?resource=download
+
+**Reference**
+https://www.youtube.com/watch?v=4Yban3Yb61M
 
 <img width="591" alt="Screenshot 2023-07-05 at 2 16 40 PM" src="https://github.com/nalliboinaramya/Handwritten-Mathematical-Equation-Recognition-Using-CNN/assets/107070879/f1aec5c0-d5c4-4053-be0b-a52858c8865f">
 <img width="592" alt="Screenshot 2023-07-05 at 2 17 10 PM" src="https://github.com/nalliboinaramya/Handwritten-Mathematical-Equation-Recognition-Using-CNN/assets/107070879/0b4ae423-4ad6-40c1-a55d-fbcbe67f77b0">
